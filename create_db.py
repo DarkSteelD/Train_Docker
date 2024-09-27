@@ -6,15 +6,17 @@ DB_NAME = os.getenv('DB_NAME', 'your_database')
 DB_USER = os.getenv('DB_USER', 'your_user')
 DB_PASSWORD = os.getenv('DB_PASS', 'your_password')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
-
+def get_db_connection():
+    conn = psycopg2.connect(
+        host=os.getenv('DB_HOST', 'localhost'),
+        port=os.getenv('DB_PORT', '5432'), 
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASS')
+    )
+    return conn
 def create_db_and_table():
     try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST
-        )
+        conn = get_db_connection()
         conn.autocommit = True
         cursor = conn.cursor()
 
