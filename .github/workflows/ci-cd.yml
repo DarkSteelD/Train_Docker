@@ -30,16 +30,22 @@ jobs:
       - name: Run tests
         run: |
           podman exec web python -m unittest discover
-
       - name: Check Application Health
         run: |
-          podman exec web curl -f http://localhost:5000/health || exit 1
+          podman exec web python -c "import sys; import httpx; response = httpx.get('http://localhost:5000/health'); sys.exit(0) if response.status_code == 200 else sys.exit(1)"
 
       - name: Deploy Project
         if: success()
         run: |
           echo "Deploying project..."
-          # Add your deployment commands here
+          # Tag the image with the registry URL and desired tag
+          podman tag my-app-image my-registry.com/my-namespace/my-app-image:latest
+          # Push the image to the registry
+          podman push my-registry.com/my-namespace/my-app-image:latest
+          # Update the running container on the deployment environment
+          # Note: This assumes you have SSH access or appropriate permissions to the deployment environment
+          # Here is a placeholder for deployment commands
+          echo "Deployment commands would go here"
 
       - name: Clean up after tests
         run: |
