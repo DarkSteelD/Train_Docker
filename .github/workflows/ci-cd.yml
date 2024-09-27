@@ -9,18 +9,27 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
+      # Step 1: Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Build Podman image
-        run: podman build -t my-app-image .  
+
+      # Step 2: Install Podman
+      - name: Install Podman
+        run: |
+          sudo apt update
+          sudo apt install -y podman podman-compose
+
+      # Step 3: Build and start containers using Podman Compose
+      - name: Start services using Podman Compose
+        run: |
+          podman-compose up -d  # Start the web and db services
+
+      # Step 4: Run tests in the web container
       - name: Run tests and linters
         run: |
-          podman run my-app-image python -m unittest discover  # Run your tests
-          podman run my-app-image flake8 app.py create_db.py    # Run your linter
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Deploy to VM via SSH
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} 'cd /home/${{ secrets.VM_USER }}/deploy && ./deploy.sh'
+          podman-compose exec web python -m unittest discover  # Run your tests
+          podman-compose exec web flake8 app.py create_db.py    # Run your linter
+
+      # Step 5: Stop and clean up containers
+      - name: Clean up
+        run: podman-compose down -v
