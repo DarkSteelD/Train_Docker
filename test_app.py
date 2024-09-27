@@ -1,14 +1,14 @@
 import unittest
+from fastapi.testclient import TestClient
 from app import app
 
 class BasicTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = app.test_client()
-        self.app.testing = True
+        self.client = TestClient(app)
 
     def test_data_endpoint(self):
-        result = self.app.get('/data')
-        self.assertEqual(result.status_code, 200)
+        response = self.client.get('/data')
+        self.assertEqual(response.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main()

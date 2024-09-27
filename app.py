@@ -1,28 +1,27 @@
-from flask import Flask, jsonify
-import psycopg2
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+import asyncpg
 import os
 
-app = Flask(__name__)
+app = FastAPI()
 
-def get_db_connection():
-    conn = psycopg2.connect(
+async def get_db_connection():
+    conn = await asyncpg.connect(
         host=os.getenv('DB_HOST', 'localhost'),
-        port=os.getenv('DB_PORT', '12312'), 
+        port=os.getenv('DB_PORT', '5432'), 
         database=os.getenv('DB_NAME'),
         user=os.getenv('DB_USER'),
         password=os.getenv('DB_PASS')
     )
     return conn
 
-@app.route('/data', methods=['GET'])
-def get_data():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM dummy_data')
-    data = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return jsonify(data)
+@app.get('/data')
+async def get_data():
+    conn = await get_db_connection()
+    data = await conn.fetch('SELECT * FROM dummy_data')
+    await conn.close()
+    return JSONResponse(content=[dict(record) for record in data])
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    import uvicorn
+    uvicorn.run(app, host='0.0.0.0', port=5000)
