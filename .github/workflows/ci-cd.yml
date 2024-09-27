@@ -12,33 +12,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Clean up existing containers
+      - name: Build and Start Services
         run: |
-          podman stop $(podman ps -aq) || true
-          podman rm $(podman ps -aq) || true
-
-      - name: Build Podman image
-        run: |
-          podman build -t my-app-image .
-
-      - name: Initialize app.py
-        run: |
-          podman exec web python -c "import app"  # Ensure app.py initializes without errors
-
-      - name: Check Database Connection and Select Data
-        run: |
-          podman exec web python -c "import asyncpg; conn = await asyncpg.connect(host='localhost', port=5432, user='your_user', password='your_password', database='your_database'); data = await conn.fetch('SELECT * FROM your_table'); print(data); await conn.close()"
+          podman-compose up -d --build
+          sleep 5  # Wait for the application to start
 
       - name: Run tests
         run: |
-          podman exec web python -m unittest discover
+          podman-compose exec web python -m unittest discover
+
+      - name: Check Application Health
+        run: |
+          podman-compose exec web curl -f http://localhost:5000/health || exit 1
 
       - name: Deploy Project
+        if: success()
         run: |
           echo "Deploying project..."
-          # Add your deployment commands here (e.g., copying files, updating services, etc.)
+          # Add your deployment commands here
 
       - name: Clean up after tests
         run: |
-          podman stop web
-          podman rm web
+          podman-compose down -v

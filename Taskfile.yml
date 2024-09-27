@@ -2,12 +2,16 @@ version: '3'
 
 tasks:
   run:
-    desc: "Run the application with Docker Compose"
+    desc: "Run the application with Podman Compose"
     cmd: podman-compose up --build
 
   test:
     desc: "Run tests"
-    cmd: podman-compose run web python -m unittest discover
+    cmd: |
+      podman-compose up -d web
+      sleep 5  # Wait for the application to start
+      podman-compose exec web python -m unittest discover
+      podman-compose down -v
 
   clean:
     desc: "Clean up the containers"
