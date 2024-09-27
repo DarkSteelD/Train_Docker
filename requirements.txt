@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 asyncpg
+flake8
+httpx
