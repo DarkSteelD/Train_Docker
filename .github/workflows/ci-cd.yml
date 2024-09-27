@@ -12,18 +12,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build and Start Services
+      - name: Build Podman image
         run: |
-          podman-compose up -d --build
+          podman build -t my-app-image .
+
+      - name: Run Application Container
+        run: |
+          podman start web || podman run -d --name web --network=host \
+            -e DB_HOST=localhost \
+            -e DB_PORT=5432 \
+            -e DB_NAME=your_database \
+            -e DB_USER=your_user \
+            -e DB_PASS=your_password \
+            my-app-image
           sleep 5  # Wait for the application to start
 
       - name: Run tests
         run: |
-          podman-compose exec web python -m unittest discover
+          podman exec web python -m unittest discover
 
       - name: Check Application Health
         run: |
-          podman-compose exec web curl -f http://localhost:5000/health || exit 1
+          podman exec web curl -f http://localhost:5000/health || exit 1
 
       - name: Deploy Project
         if: success()
@@ -33,4 +43,5 @@ jobs:
 
       - name: Clean up after tests
         run: |
-          podman-compose down -v
+          podman stop web
+          podman rm web

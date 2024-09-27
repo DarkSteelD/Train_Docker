@@ -17,8 +17,8 @@ class BasicTestCase(unittest.TestCase):
             pass
 
         mock_conn = AsyncMock()
-        mock_conn.fetch = mock_fetch
-        mock_conn.close = mock_close
+        mock_conn.fetch.side_effect = mock_fetch
+        mock_conn.close.side_effect = mock_close
         mock_get_db_connection.return_value = mock_conn
 
         response = self.client.get('/data')

@@ -2,17 +2,36 @@ version: '3'
 
 tasks:
   run:
-    desc: "Run the application with Podman Compose"
-    cmd: podman-compose up --build
+    desc: "Run the application with Podman"
+    cmd: |
+      podman build -t my-app-image .
+      podman run -d --name web --network=host \
+        -e DB_HOST=localhost \
+        -e DB_PORT=5432 \
+        -e DB_NAME=your_database \
+        -e DB_USER=your_user \
+        -e DB_PASS=your_password \
+        my-app-image
 
   test:
     desc: "Run tests"
     cmd: |
-      podman-compose up -d web
+      podman stop web || true
+      podman rm web || true
+      podman run -d --name web --network=host \
+        -e DB_HOST=localhost \
+        -e DB_PORT=5432 \
+        -e DB_NAME=your_database \
+        -e DB_USER=your_user \
+        -e DB_PASS=your_password \
+        my-app-image
       sleep 5  # Wait for the application to start
-      podman-compose exec web python -m unittest discover
-      podman-compose down -v
+      podman exec web python -m unittest discover
+      podman stop web
+      podman rm web
 
   clean:
     desc: "Clean up the containers"
-    cmd: podman-compose down -v
+    cmd: |
+      podman stop web || true
+      podman rm web || true
