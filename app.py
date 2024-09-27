@@ -7,7 +7,7 @@ app = Flask(__name__)
 def get_db_connection():
     conn = psycopg2.connect(
         host=os.getenv('DB_HOST', 'localhost'),
-        port=os.getenv('DB_PORT', '5432'),
+        port=os.getenv('DB_PORT', '12312'), 
         database=os.getenv('DB_NAME'),
         user=os.getenv('DB_USER'),
         password=os.getenv('DB_PASS')
@@ -18,7 +18,7 @@ def get_db_connection():
 def get_data():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM dummy_data')  
+    cursor.execute('SELECT * FROM dummy_data')
     data = cursor.fetchall()
     cursor.close()
     conn.close()

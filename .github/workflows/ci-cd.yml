@@ -25,7 +25,7 @@ jobs:
 
       - name: Wait for Database to be Ready
         run: |
-          until podman exec db pg_isready -U your_user -d your_database -h localhost -p 12312; do
+          until podman exec db pg_isready -U your_user -d your_database -p 12312; do
             sleep 2
           done
 
