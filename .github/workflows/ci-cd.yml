@@ -17,13 +17,10 @@ jobs:
         run: |
           podman run my-app-image python -m unittest discover  # Run your tests
           podman run my-app-image flake8 app.py create_db.py    # Run your linter
-      - name: Deploy to VM via SSH
-        uses: appleboy/ssh-action@v0.1.8
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            cd /home/${{ secrets.VM_USER }}/deploy
-            ./deploy.sh
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy to VM via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} 'cd /home/${{ secrets.VM_USER }}/deploy && ./deploy.sh'
