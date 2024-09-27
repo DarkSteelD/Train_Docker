@@ -1,11 +1,11 @@
 run:
-	docker-compose up --build
+	podman-compose up --build
 
 initdb:
-	docker-compose run web python create_db.py
+	podman-compose run web python create_db.py
 
 test:
-	docker-compose run web python -m unittest discover
+	podman-compose run web python -m unittest discover
 
 clean:
-	docker-compose down -v
+	podman-compose down -v
