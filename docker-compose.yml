@@ -19,7 +19,7 @@ services:
       POSTGRES_USER: your_user
       POSTGRES_PASSWORD: your_password
     ports:
-      - "5432:5432"
+      - "12312:5432" 
     volumes:
       - pgdata:/var/lib/postgresql/data
 
