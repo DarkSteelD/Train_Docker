@@ -13,11 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Clean up any existing containers (stop and remove them)
+      # Step 2: Clean up any existing containers with the same name (stop and remove them)
       - name: Clean up existing containers
         run: |
-          podman stop db4 web4 || true  # Ignore errors if containers don't exist
-          podman rm db4 web4 || true    # Ignore errors if containers don't exist
+          podman stop db4 web4 || true  # Stop existing containers if they are running
+          podman rm db4 web4 || true    # Remove existing containers if they exist
 
       # Step 3: Build the Podman image and run containers using default network
       - name: Build Podman image and run containers
