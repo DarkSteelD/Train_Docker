@@ -14,19 +14,18 @@ jobs:
 
       - name: Clean up existing containers
         run: |
-          podman stop $(podman ps -aq) || true  # Stop all running containers
-          podman rm $(podman ps -aq) || true    # Remove all containers
+          podman stop $(podman ps -aq) || true
+          podman rm $(podman ps -aq) || true
 
       - name: Build Podman image and run containers
         run: |
           podman build -t my-app-image .
-          podman run -d --name db -e POSTGRES_DB=your_database -e POSTGRES_USER=your_user -e POSTGRES_PASSWORD=your_password -p 5432:5432 postgres:13
-          podman run -d --name web -e DB_HOST=db -e DB_PORT=5432 -e DB_NAME=your_database -e DB_USER=your_user -e DB_PASS=your_password -p 5000:5000 my-app-image
+          podman run -d --name db -e POSTGRES_DB=your_database -e POSTGRES_USER=your_user -e POSTGRES_PASSWORD=your_password -p 12312:5432 postgres:13
+          podman run -d --name web -e DB_HOST=db -e DB_PORT=12312 -e DB_NAME=your_database -e DB_USER=your_user -e DB_PASS=your_password -p 5000:5000 my-app-image
 
       - name: Wait for Database to be Ready
         run: |
           until podman exec db pg_isready -U your_user -d your_database; do
-            echo "Waiting for PostgreSQL to be ready..."
             sleep 2
           done
             
@@ -35,8 +34,8 @@ jobs:
 
       - name: Run tests and linters
         run: |
-          podman exec web python -m unittest discover  # Run your tests
-          podman exec web flake8 app.py create_db.py    # Run your linter
+          podman exec web python -m unittest discover
+          podman exec web flake8 app.py create_db.py
 
       - name: Clean up after tests
         run: |
