@@ -3,7 +3,7 @@ name: CI/CD Pipeline with Podman
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -11,21 +11,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Build Podman image
-        run: podman build -t your-image-name .
-
+        run: podman build -t my-app-image .  
       - name: Run tests and linters
         run: |
-          podman run your-image-name python -m unittest discover
-          podman run your-image-name flake8 app.py create_db.py
-
-      - name: Push image to container registry (Docker Hub)
-        run: |
-          podman login docker.io -u "${{ secrets.DOCKER_USERNAME }}" --password "${{ secrets.DOCKER_PASSWORD }}"
-          podman tag your-image-name docker.io/your-dockerhub-username/your-image-name
-          podman push docker.io/your-dockerhub-username/your-image-name
-
+          podman run my-app-image python -m unittest discover  # Run your tests
+          podman run my-app-image flake8 app.py create_db.py    # Run your linter
       - name: Deploy to VM via SSH
         uses: appleboy/ssh-action@v0.1.8
         with:
@@ -34,5 +25,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd /home/your-username/deploy
+            cd /home/${{ secrets.VM_USER }}/deploy
             ./deploy.sh
