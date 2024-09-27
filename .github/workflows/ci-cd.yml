@@ -21,10 +21,23 @@ jobs:
         run: |
           podman build -t my-app-image .
 
-      - name: Run tests and linters
+      - name: Initialize app.py
+        run: |
+          podman exec web python -c "import app"  # Ensure app.py initializes without errors
+
+      - name: Check Database Connection and Select Data
+        run: |
+          podman exec web python -c "import asyncpg; conn = await asyncpg.connect(host='localhost', port=5432, user='your_user', password='your_password', database='your_database'); data = await conn.fetch('SELECT * FROM your_table'); print(data); await conn.close()"
+
+      - name: Run tests
         run: |
           podman exec web python -m unittest discover
-          
+
+      - name: Deploy Project
+        run: |
+          echo "Deploying project..."
+          # Add your deployment commands here (e.g., copying files, updating services, etc.)
+
       - name: Clean up after tests
         run: |
           podman stop web
