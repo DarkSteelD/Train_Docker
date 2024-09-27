@@ -13,37 +13,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Clean up any existing containers and network (stop and remove them)
-      - name: Clean up existing containers and network
+      # Step 2: Clean up any existing containers (stop and remove them)
+      - name: Clean up existing containers
         run: |
           podman stop db4 web4 || true  # Ignore errors if containers don't exist
           podman rm db4 web4 || true    # Ignore errors if containers don't exist
-          podman network rm my-network || true  # Remove the custom network if it exists
 
-      # Step 3: Create a custom network
-      - name: Create Podman network
-        run: podman network create my-network
-
-      # Step 4: Build the Podman image and run web and db containers on the same network
-      - name: Build Podman image and run containers on network
+      # Step 3: Build the Podman image and run containers using default network
+      - name: Build Podman image and run containers
         run: |
           podman build -t my-app-image .
-          podman run -d --name db4 --network=my-network -e POSTGRES_DB=your_database -e POSTGRES_USER=your_user -e POSTGRES_PASSWORD=your_password -p 13412:5432 postgres:13
-          podman run -d --name web4 --network=my-network -e DB_HOST=db4 -e DB_PORT=13412 -e DB_NAME=your_database -e DB_USER=your_user -e DB_PASS=your_password -p 5000:5000 my-app-image
+          podman run -d --name db4 -e POSTGRES_DB=your_database -e POSTGRES_USER=your_user -e POSTGRES_PASSWORD=your_password -p 13412:5432 postgres:13
+          podman run -d --name web4 -e DB_HOST=db4 -e DB_PORT=13412 -e DB_NAME=your_database -e DB_USER=your_user -e DB_PASS=your_password -p 5000:5000 my-app-image
 
-      # Step 5: Initialize the database
+      # Step 4: Initialize the database
       - name: Initialize database
         run: podman exec web4 python create_db.py  # Run your database setup script inside the web container
 
-      # Step 6: Run tests and linters inside the Podman container
+      # Step 5: Run tests and linters inside the Podman container
       - name: Run tests and linters
         run: |
           podman exec web4 python -m unittest discover  # Run your tests
           podman exec web4 flake8 app.py create_db.py    # Run your linter
 
-      # Step 7: Stop and clean up containers and network
+      # Step 6: Stop and clean up containers
       - name: Clean up after tests
         run: |
           podman stop web4 db4
           podman rm web4 db4
-          podman network rm my-network
