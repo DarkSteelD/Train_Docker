@@ -13,18 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install Podman
-      - name: Install Podman
-        run: |
-          sudo apt update
-          sudo apt install -y podman podman-compose
-
-      # Step 3: Build and start containers using Podman Compose
+      # Step 2: Build and start services using Podman Compose
       - name: Start services using Podman Compose
-        run: |
-          podman-compose up -d  # Start the web and db services
+        run: podman-compose up -d  # Start the web and db services
 
-      # Step 4: Run tests in the web container
+      # Step 3: Initialize the database
+      - name: Initialize database
+        run: podman-compose exec web python create_db.py  # Run your database setup script inside the web container
+
+      # Step 4: Run tests inside the Podman container
       - name: Run tests and linters
         run: |
           podman-compose exec web python -m unittest discover  # Run your tests

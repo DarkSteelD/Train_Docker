@@ -17,6 +17,8 @@ def create_db_and_table():
         )
         conn.autocommit = True
         cursor = conn.cursor()
+
+        # Create table if it doesn't exist
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS dummy_data (
                 id SERIAL PRIMARY KEY,
@@ -25,13 +27,19 @@ def create_db_and_table():
                 city VARCHAR(100)
             )
         ''')
-        cursor.execute('''
-            INSERT INTO dummy_data (name, age, city)
-            VALUES
-            ('Alice', 30, 'New York'),
-            ('Bob', 25, 'Los Angeles'),
-            ('Charlie', 35, 'Chicago')
-        ''')
+
+        # Insert dummy data if table is empty
+        cursor.execute("SELECT COUNT(*) FROM dummy_data")
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            cursor.execute('''
+                INSERT INTO dummy_data (name, age, city)
+                VALUES
+                ('Alice', 30, 'New York'),
+                ('Bob', 25, 'Los Angeles'),
+                ('Charlie', 35, 'Chicago')
+            ''')
 
         cursor.close()
         conn.close()
