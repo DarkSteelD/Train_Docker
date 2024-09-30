@@ -25,8 +25,7 @@ jobs:
             -e DB_USER=your_user \
             -e DB_PASS=your_password \
             my-app-image
-          sleep 5  # Wait for the application to start
-
+          sleep 5  
       - name: Run tests
         run: |
           podman exec web python -m unittest discover
@@ -38,13 +37,8 @@ jobs:
         if: success()
         run: |
           echo "Deploying project..."
-          # Tag the image with the registry URL and desired tag
           podman tag my-app-image my-registry.com/my-namespace/my-app-image:latest
-          # Push the image to the registry
           podman push my-registry.com/my-namespace/my-app-image:latest
-          # Update the running container on the deployment environment
-          # Note: This assumes you have SSH access or appropriate permissions to the deployment environment
-          # Here is a placeholder for deployment commands
           echo "Deployment commands would go here"
 
       - name: Clean up after tests
